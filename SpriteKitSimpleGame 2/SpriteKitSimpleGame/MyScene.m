@@ -14,9 +14,30 @@
 @property (nonatomic) NSTimeInterval lastUpdateTimeInterval;
 @end
 
+static inline CGPoint rwAdd(CGPoint a, CGPoint b) {
+    return CGPointMake(a.x+b.x, a.y+b.y);
+}
+
+static inline CGPoint rwSub(CGPoint a, CGPoint b) {
+    return CGPointMake(a.x-b.x, a.y-b.y);
+}
+
+static inline CGPoint rwMult(CGPoint a, float b) {
+    return CGPointMake(a.x * b, a.y * b);
+}
+
+static inline float rwLength(CGPoint a) {
+    return sqrtf(a.x*a.x + a.y*a.y);
+}
+
+static inline CGPoint rwNormlize(CGPoint a) {
+    float length = rwLength(a);
+    return CGPointMake(a.x / length, a.y / length);
+}
+
 @implementation MyScene
 
--(id)initWithSize:(CGSize)size {    
+-(id)initWithSize:(CGSize)size {
     if (self = [super initWithSize:size]) {
         /* Setup your scene here */
         
@@ -26,18 +47,12 @@
         
         // 3
         self.backgroundColor = [SKColor colorWithRed:1.0 green:1.0 blue:1.0 alpha:1.0];
-
+        
         // 4
         self.player = [SKSpriteNode spriteNodeWithImageNamed:@"player"];
         self.player.position = CGPointMake(self.player.size.width/2, self.frame.size.height/2);
         [self addChild:self.player];
         
-//        SKLabelNode *myLabel = [SKLabelNode labelNodeWithFontNamed:@"Chalkduster"];
-//        myLabel.text = @"Hello, World!";
-//        myLabel.fontSize = 30;
-//        myLabel.position = CGPointMake(CGRectGetMidX(self.frame),
-//                                       CGRectGetMidY(self.frame));
-//        [self addChild:myLabel];
     }
     return self;
 }
@@ -87,27 +102,65 @@
     SKAction *actionMove = [SKAction moveTo:CGPointMake(-monster.size.width/2, actualY) duration:actualDuration];
     SKAction *actionMoveDone = [SKAction removeFromParent];
     [monster runAction:[SKAction sequence:@[actionMove, actionMoveDone]]];
-
-
+    
+    
 }
 
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     /* Called when a touch begins */
     
-    for (UITouch *touch in touches) {
-        CGPoint location = [touch locationInNode:self];
-        
-        SKSpriteNode *sprite = [SKSpriteNode spriteNodeWithImageNamed:@"Spaceship"];
-        
-        sprite.position = location;
-        
-        SKAction *action = [SKAction rotateByAngle:M_PI duration:1];
-        
-        [sprite runAction:[SKAction repeatActionForever:action]];
-        
-        [self addChild:sprite];
-    }
+    //    for (UITouch *touch in touches) {
+    //        CGPoint location = [touch locationInNode:self];
+    //
+    //        SKSpriteNode *sprite = [SKSpriteNode spriteNodeWithImageNamed:@"Spaceship"];
+    //
+    //        sprite.position = location;
+    //
+    //        SKAction *action = [SKAction rotateByAngle:M_PI duration:1];
+    //
+    //        [sprite runAction:[SKAction repeatActionForever:action]];
+    //
+    //        [self addChild:sprite];
+    //    }
 }
 
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    // 1 - Choose one of the touches to work with
+    UITouch *touch = [touches anyObject];
+    CGPoint location = [touch locationInNode:self];
+    
+    // 2 - Set up initial location of projectile
+    SKSpriteNode * projectile = [SKSpriteNode spriteNodeWithImageNamed:@"projectile"];
+    projectile.position = self.player.position;
+    NSLog(@"position %@",NSStringFromCGPoint(projectile.position));
+    // 3 - Determine offset of location to projectile
+    CGPoint offset = rwSub(location, projectile.position);
+    NSLog(@"offset %@",NSStringFromCGPoint(offset));
+    // 4 - Bail out if you are shooting down or backwards
+    if (offset.x <= 0) {
+        return;
+    }
+    
+    // 5 - OK to add now - we've double checked position
+    [self addChild:projectile];
+    
+    // 6 - Get the direction of where to shoot
+    CGPoint direction = rwNormlize(offset);
+    NSLog(@"direction %@",NSStringFromCGPoint(direction));
+    // 7 - Make it shoot far enough to be guaranteed off screen
+    CGPoint shootAmount = rwMult(direction, 1000);
+    NSLog(@"shoot amount %@",NSStringFromCGPoint(shootAmount));
+    // 8 - Add the shoot amount to the current position
+    CGPoint realDest = rwAdd(shootAmount, projectile.position);
+    NSLog(@"realdest %@",NSStringFromCGPoint(realDest));
+    // 9 - Create the actions
+    float velocity = 480.0/1.0;
+    float realMoveDuration = self.size.width / velocity;
+    SKAction *actionMove = [SKAction moveTo:realDest duration:realMoveDuration];
+    SKAction *actionMoveDone = [SKAction removeFromParent];
+    [projectile runAction:[SKAction sequence:@[actionMove, actionMoveDone]]];
+}
 
 @end
