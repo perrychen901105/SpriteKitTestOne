@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>5CD3BA0D-1A74-4231-A1FA-6A85D1042AE6</string>
+	<key>IDESourceControlProjectName</key>
+	<string>SpriteKitSimpleGame</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>0ED28206-85D0-41FF-A302-68588CC9C3D2</key>
+		<string>https://github.com/perrychen901105/SpriteKitTestOne.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>SpriteKitSimpleGame 2/SpriteKitSimpleGame.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>0ED28206-85D0-41FF-A302-68588CC9C3D2</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/perrychen901105/SpriteKitTestOne.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>0ED28206-85D0-41FF-A302-68588CC9C3D2</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>0ED28206-85D0-41FF-A302-68588CC9C3D2</string>
+			<key>IDESourceControlWCCName</key>
+			<string>SpriteKitTestOne</string>
+		</dict>
+	</array>
+</dict>
+</plist>
