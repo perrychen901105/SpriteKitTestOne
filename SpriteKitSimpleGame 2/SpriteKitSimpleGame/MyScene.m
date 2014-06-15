@@ -90,11 +90,17 @@ static inline CGPoint rwNormlize(CGPoint a) {
 
 - (void)addMonster {
     SKSpriteNode * monster = [SKSpriteNode spriteNodeWithImageNamed:@"monster"];
-    
+    //Creates a physics body for the sprite. In this case, the body is defined as a rectangle of the same size of the sprite, because that’s a decent approximation for the monster.
     monster.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:monster.size];
+    //Sets the sprite to be dynamic. This means that the physics engine will not control the movement of the monster – you will through the code you’ve already written (using move actions).
     monster.physicsBody.dynamic = YES;
+    //Sets the category bit mask to be the monsterCategory you defined earlier.
+    
     monster.physicsBody.categoryBitMask = monsterCategory;
+    // The contactTestBitMask indicates what categories of objects this object should notify the contact listener when they intersect. You choose projectiles here.
+    
     monster.physicsBody.contactTestBitMask = projectileCategory;
+    // The collisionBitMask indicates what categories of objects this object that the physics engine handle contact responses to (i.e. bounce off of). You don’t want the monster and projectile to bounce off each other – it’s OK for them to go right through each other in this game – so you set this to 0.
     monster.physicsBody.collisionBitMask = 0;
     
     // Determine where to spawn the monster along the Y axis
