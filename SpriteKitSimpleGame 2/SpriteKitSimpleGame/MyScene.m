@@ -7,13 +7,19 @@
 //
 
 #import "MyScene.h"
+
+
 //1 create a private interface so that you can declare a private variable for the player
-@interface MyScene()
+@interface MyScene()<SKPhysicsContactDelegate>
 @property (nonatomic) SKSpriteNode * player; // ninja node
 @property (nonatomic) NSTimeInterval lastSpawnTimeInterval;
 @property (nonatomic) NSTimeInterval lastUpdateTimeInterval;
+
+
 @end
 
+static const uint32_t projectileCategory = 0x01 << 0;
+static const uint32_t monsterCategory     = 0x01 << 1;
 static inline CGPoint rwAdd(CGPoint a, CGPoint b) {
     return CGPointMake(a.x+b.x, a.y+b.y);
 }
@@ -53,6 +59,9 @@ static inline CGPoint rwNormlize(CGPoint a) {
         self.player.position = CGPointMake(self.player.size.width/2, self.frame.size.height/2);
         [self addChild:self.player];
         
+        
+        self.physicsWorld.gravity = CGVectorMake(0, 0);
+        self.physicsWorld.contactDelegate = self;
     }
     return self;
 }
@@ -82,6 +91,12 @@ static inline CGPoint rwNormlize(CGPoint a) {
 - (void)addMonster {
     SKSpriteNode * monster = [SKSpriteNode spriteNodeWithImageNamed:@"monster"];
     
+    monster.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:monster.size];
+    monster.physicsBody.dynamic = YES;
+    monster.physicsBody.categoryBitMask = monsterCategory;
+    monster.physicsBody.contactTestBitMask = projectileCategory;
+    monster.physicsBody.collisionBitMask = 0;
+    
     // Determine where to spawn the monster along the Y axis
     int minY = monster.size.height / 2;
     int maxY = self.frame.size.height - monster.size.height / 2;
@@ -90,7 +105,10 @@ static inline CGPoint rwNormlize(CGPoint a) {
     
     // create the monster slightly off-screen along the right edge. and along a random position along the Y axis as calculated above
     monster.position = CGPointMake(self.frame.size.width + monster.size.width/2, actualY);
+    
     [self addChild:monster];
+    
+    
     
     // Determine speed of the monster
     int minDuration = 2.0;
