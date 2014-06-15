@@ -7,14 +7,14 @@
 //
 
 #import "MyScene.h"
-
+#import "GameOverScene.h"
 
 //1 create a private interface so that you can declare a private variable for the player
 @interface MyScene()<SKPhysicsContactDelegate>
 @property (nonatomic) SKSpriteNode * player; // ninja node
 @property (nonatomic) NSTimeInterval lastSpawnTimeInterval;
 @property (nonatomic) NSTimeInterval lastUpdateTimeInterval;
-
+@property (nonatomic) int monsterDestroyed;
 
 @end
 
@@ -125,7 +125,12 @@ static inline CGPoint rwNormlize(CGPoint a) {
     // Create the actions
     SKAction *actionMove = [SKAction moveTo:CGPointMake(-monster.size.width/2, actualY) duration:actualDuration];
     SKAction *actionMoveDone = [SKAction removeFromParent];
-    [monster runAction:[SKAction sequence:@[actionMove, actionMoveDone]]];
+    SKAction *loseAction = [SKAction runBlock:^{
+        SKTransition *reveal = [SKTransition flipHorizontalWithDuration:0.5];
+        SKScene *gameOverScene = [[GameOverScene alloc] initWithSize:self.size won:NO];
+        [self.view presentScene:gameOverScene transition:reveal];
+    }];
+    [monster runAction:[SKAction sequence:@[actionMove, loseAction, actionMoveDone]]];
     
     
 }
@@ -158,6 +163,14 @@ static inline CGPoint rwNormlize(CGPoint a) {
     // 2 - Set up initial location of projectile
     SKSpriteNode * projectile = [SKSpriteNode spriteNodeWithImageNamed:@"projectile"];
     projectile.position = self.player.position;
+    
+    projectile.physicsBody = [SKPhysicsBody bodyWithCircleOfRadius:projectile.size.width/2];
+    projectile.physicsBody.dynamic = YES;
+    projectile.physicsBody.categoryBitMask = projectileCategory;
+    projectile.physicsBody.contactTestBitMask = monsterCategory;
+    projectile.physicsBody.collisionBitMask = 0;
+    projectile.physicsBody.usesPreciseCollisionDetection = YES;
+    
     NSLog(@"position %@",NSStringFromCGPoint(projectile.position));
     // 3 - Determine offset of location to projectile
     CGPoint offset = rwSub(location, projectile.position);
@@ -185,6 +198,44 @@ static inline CGPoint rwNormlize(CGPoint a) {
     SKAction *actionMove = [SKAction moveTo:realDest duration:realMoveDuration];
     SKAction *actionMoveDone = [SKAction removeFromParent];
     [projectile runAction:[SKAction sequence:@[actionMove, actionMoveDone]]];
+    
+    [self runAction:[SKAction playSoundFileNamed:@"pew-pew-lei.caf" waitForCompletion:NO]];
+}
+
+/*
+ 
+ As soon as you remove a sprite from its parent, it is no longer in the scene hierarchy so no more actions will take place from that point on. So you don’t want to remove the sprite from the scene until you’ve transitioned to the lose scene. Actually you don’t even need to call to actionMoveDone anymore since you’re transitioning to a new scene, but I’ve left it here for educational purposes. 
+ */
+
+- (void)projectile:(SKSpriteNode *)projectile didCollideWithIdentifier:(SKSpriteNode *)monster {
+    NSLog(@"Hit");
+    [projectile removeFromParent];
+    [monster removeFromParent];
+    self.monsterDestroyed++;
+    if (self.monsterDestroyed > 30) {
+        SKTransition *reveal = [SKTransition flipHorizontalWithDuration:0.5];
+        SKScene *gameOverScene = [[GameOverScene alloc] initWithSize:self.size won:YES];
+        [self.view presentScene:gameOverScene transition:reveal];
+    }
+}
+
+- (void)didBeginContact:(SKPhysicsContact *)contact
+{
+    // 1 This method passes you the two bodies that collide, but does not guarantee that they are passed in any particular order. So this bit of code just arranges them so they are sorted by their category bit masks so you can make some assumptions later. This bit of code came from Apple’s Adventure sample.
+    SKPhysicsBody *firstBody, *secondBody;
+    
+    if (contact.bodyA.categoryBitMask < contact.bodyB.categoryBitMask) {
+        firstBody = contact.bodyA;
+        secondBody = contact.bodyB;
+    } else {
+        firstBody = contact.bodyB;
+        secondBody = contact.bodyA;
+    }
+    
+    // 2 Finally, it checks to see if the two bodies that collide are the projectile and monster, and if so calls the method you wrote earlier.
+    if ((firstBody.categoryBitMask & projectileCategory) != 0 && (secondBody.categoryBitMask & monsterCategory) != 0) {
+        [self projectile:(SKSpriteNode *)firstBody.node didCollideWithIdentifier:(SKSpriteNode *)secondBody.node];
+    }
 }
 
 @end
